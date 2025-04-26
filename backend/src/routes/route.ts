@@ -3,3 +3,5 @@ import { LLMprocessingForTwitter } from "../controller/LLMprocessingController";
 const router = express.Router();
 
 router.post("/processing" , LLMprocessingForTwitter)
+
+export default router;
