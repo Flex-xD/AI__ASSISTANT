@@ -1,7 +1,7 @@
 import express, { RequestHandler } from "express";
-import { LLMprocessingForTwitter } from "../controller/LLMprocessingController";
+import { LLMprocessingForX } from "../controller/LLMprocessingController";
 const router = express.Router();
 
-router.post("/processing" , LLMprocessingForTwitter as RequestHandler)
+router.post("/processing" , LLMprocessingForX as unknown as RequestHandler)
 
 export default router;
