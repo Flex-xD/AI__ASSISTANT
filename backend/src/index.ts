@@ -15,4 +15,4 @@ app.use("/api/llm" , llmRoutes);
 app.listen(PORT , () => {
     connectdb();
     console.log(`Server is running on port : ${PORT}`);
-})
+});
