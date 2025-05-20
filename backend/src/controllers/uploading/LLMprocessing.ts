@@ -13,7 +13,6 @@ const twitterClient = new TwitterApi({
     accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET!,
 });
 
-
 export const LLMprocessingForX = async (req: Request, res: Response) => {
     const { prompt } = req.body as { prompt: string };
 
