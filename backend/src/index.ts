@@ -3,6 +3,8 @@ import { connectdb } from "./db";
 import dotenv from "dotenv";
 import processingRoutes from "./routes/processingRoutes";
 import  uploadingRoutes from "./routes/uploadingRoutes";
+import cors from "cors";
+import bodyParser from "body-parser";
 dotenv.config();
 
 
@@ -10,6 +12,14 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
+app.use(cors());
+// app.use(cors({
+//     origin:process.env.CLIENT_URL , 
+//     methods:["GET" , "POST" , "PUT" , "DELETE"],
+//     credentials:true
+// }))
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use("/api/llmProcessing" , processingRoutes);
 app.use("/api/uploading" , uploadingRoutes);

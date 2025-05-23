@@ -1,17 +1,9 @@
 import { StatusCodes } from "http-status-codes";
-import { TwitterApi } from "twitter-api-v2";
-import axios from "axios";
 import { Request, Response } from "express";
+import axios from "axios";
 import { config } from "dotenv";
 import { personalityContext } from "../../constants";
 config();
-
-const twitterClient = new TwitterApi({
-    appKey: process.env.TWITTER_API_KEY!,
-    appSecret: process.env.TWITTER_API_KEY_SECRET!,
-    accessToken: process.env.TWITTER_ACCESS_TOKEN!,
-    accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET!,
-});
 
 export const LLMprocessingForX = async (req: Request, res: Response) => {
     const { prompt } = req.body as { prompt: string };
@@ -41,10 +33,39 @@ export const LLMprocessingForX = async (req: Request, res: Response) => {
             }
         );
 
+        const data = response.data;
+
+        // Try to parse and validate structure
+        const content = data?.choices?.[0]?.message?.content || "";
+        let parsedResponse;
+        try {
+            parsedResponse = JSON.parse(content);
+        } catch {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message: "LLM response not in expected JSON format.",
+                success: false,
+                raw: content,
+            });
+        }
+
+        const { twitter, reddit, discord } = parsedResponse;
+
+        if (!twitter || !reddit || !discord) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Response missing expected keys (twitter, reddit, discord).",
+                success: false,
+                raw: parsedResponse,
+            });
+        }
+
         return res.status(StatusCodes.OK).json({
             message: "LLM processing successful",
             success: true,
-            data: response.data,
+            data: {
+                twitter,
+                reddit,
+                discord
+            },
         });
 
     } catch (error: any) {
@@ -56,5 +77,3 @@ export const LLMprocessingForX = async (req: Request, res: Response) => {
         });
     }
 };
-
-

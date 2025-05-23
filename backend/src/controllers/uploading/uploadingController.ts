@@ -16,7 +16,11 @@ const twitterClient = new TwitterApi({
 });
 
 export const tweetUploading = asyncHandler(async (req: Request, res: Response) => {
-    const { tweetText } = req.body as { tweetText: string };
+    console.log("req.body:", req.body); // Debug: Log req.body to verify contents
+    console.log("req.files:", req.files); // Debug: Log req.files to verify uploaded files
+
+    // Safely access tweetText
+    const tweetText = req.body.tweetText as string;
 
     if (!tweetText || tweetText.trim() === "") {
         throw new ApiError(StatusCodes.BAD_REQUEST, "Tweet content is required.");
@@ -43,34 +47,34 @@ export const tweetUploading = asyncHandler(async (req: Request, res: Response) =
                 throw new ApiError(StatusCodes.UNSUPPORTED_MEDIA_TYPE, `Unsupported file type: ${mimeType}`);
             }
 
-            const mediaId = await twitterClient.v1.uploadMedia(buffer, {
-                type: fileType === "video" ? "longmp4" : undefined,
-            });
-
-            mediaIds.push(mediaId);
-            fs.unlinkSync(filePath);
+            try {
+                const mediaId = await twitterClient.v1.uploadMedia(buffer, {
+                    type: fileType === "video" ? "longmp4" : undefined,
+                });
+                mediaIds.push(mediaId);
+            } catch (error) {
+                fs.unlinkSync(file.path);
+                console.error("Media upload error:", error);
+                throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, "Failed to upload media");
+            }
+            fs.unlinkSync(file.path);
         }
     }
 
-    const tweetResponse = await twitterClient.v2.tweet({
-        text: tweetText,
-        media: mediaIds.length > 0
-            ? { media_ids: mediaIds as [string] | [string, string] | [string, string, string] | [string, string, string, string] }
-            : undefined,
-    });
-
-    res.status(StatusCodes.OK).json(
-        apiResponse(true, {
-            message: "Tweet posted successfully!",
-            tweet: tweetResponse,
-        })
-    );
-});
-
-export const discordUploading = asyncHandler(async (req: Request, res: Response) => {
-
-});
-
-export const redditUploading = asyncHandler(async (req: Request, res: Response) => {
-
+    try {
+        const tweetPayload: any = { text: tweetText };
+        if (mediaIds.length > 0) {
+            tweetPayload.media = { media_ids: mediaIds };
+        }
+        const tweetResponse = await twitterClient.v2.tweet(tweetPayload);
+        res.status(StatusCodes.OK).json(
+            apiResponse(true, {
+                message: "Tweet posted successfully!",
+                tweet: tweetResponse,
+            })
+        );
+    } catch (error) {
+        console.error("Tweet error:", error);
+        throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, "Failed to post tweet");
+    }
 });
