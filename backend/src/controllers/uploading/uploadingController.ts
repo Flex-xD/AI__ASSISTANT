@@ -16,13 +16,12 @@ const twitterClient = new TwitterApi({
 });
 
 export const tweetUploading = asyncHandler(async (req: Request, res: Response) => {
-    console.log("req.body:", req.body); // Debug: Log req.body to verify contents
-    console.log("req.files:", req.files); // Debug: Log req.files to verify uploaded files
+    console.log("Request body:", req.body); 
+    console.log("Request files:", req.files); 
 
-    // Safely access tweetText
-    const tweetText = req.body.tweetText as string;
+    const tweetContent = req.body?.tweetContent as string | undefined;
 
-    if (!tweetText || tweetText.trim() === "") {
+    if (!tweetContent || tweetContent.trim() === "") {
         throw new ApiError(StatusCodes.BAD_REQUEST, "Tweet content is required.");
     }
 
@@ -39,8 +38,7 @@ export const tweetUploading = asyncHandler(async (req: Request, res: Response) =
 
             const filePath = file.path;
             const buffer = fs.readFileSync(filePath);
-            const fileType = mimeType.split("/")[0];
-            const supportedMimeTypes = ["image/png", "image/jpeg", "image/jpg", "video/mp4"];
+            const supportedMimeTypes = ["image/png", "image/jpeg", "image/jpg"];
 
             if (!supportedMimeTypes.includes(mimeType)) {
                 fs.unlinkSync(filePath);
@@ -48,9 +46,7 @@ export const tweetUploading = asyncHandler(async (req: Request, res: Response) =
             }
 
             try {
-                const mediaId = await twitterClient.v1.uploadMedia(buffer, {
-                    type: fileType === "video" ? "longmp4" : undefined,
-                });
+                const mediaId = await twitterClient.v1.uploadMedia(buffer, { mimeType });
                 mediaIds.push(mediaId);
             } catch (error) {
                 fs.unlinkSync(file.path);
@@ -62,7 +58,7 @@ export const tweetUploading = asyncHandler(async (req: Request, res: Response) =
     }
 
     try {
-        const tweetPayload: any = { text: tweetText };
+        const tweetPayload: any = { text: tweetContent };
         if (mediaIds.length > 0) {
             tweetPayload.media = { media_ids: mediaIds };
         }

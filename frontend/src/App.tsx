@@ -15,6 +15,7 @@ interface PlatformResponse {
 
 const PostWithAIResponses: React.FC = () => {
   const [content, setContent] = useState("");
+  const [tweetContent, setTweetContent] = useState<string | undefined>(undefined);
   const [images, setImages] = useState<File[]>([]);
   const [aiResponses, setAiResponses] = useState<PlatformResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -34,8 +35,10 @@ const PostWithAIResponses: React.FC = () => {
         prompt: content,
       });
       setAiResponses(response.data.data);
+      setTweetContent(response.data.data.twitter);
     } catch (err) {
       console.error("AI generation error:", err);
+      alert("Failed to generate AI responses.");
     }
     setLoading(false);
   };
@@ -43,33 +46,38 @@ const PostWithAIResponses: React.FC = () => {
   const handleTweetPost = async () => {
     setPosting(true);
     try {
-      const formData = new FormData();
-      const tweetContent = aiResponses?.twitter || content; // Use AI-generated Twitter content or fallback to user input
-      if (!tweetContent.trim()) {
+
+      const tweetText = tweetContent || content;
+      if (!tweetText || !tweetText.trim()) {
         alert("Tweet content is empty!");
         setPosting(false);
         return;
       }
-      formData.append("tweetText", tweetContent);
-      images.forEach((img) => formData.append("media", img));
 
-      // Debug: Log FormData contents
+      const formData = new FormData();
+      formData.append("tweetContent", tweetText); 
+      images.forEach((img) => formData.append("files", img)); 
+
       for (const [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
+        console.log(`${key}: ${value instanceof File ? value.name : value}`);
       }
 
-      await axios.post(TWITTER_POSTING_ROUTE, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data", // Optional, Axios sets this automatically
-        },
-      });
+      const response = await axios.post(TWITTER_POSTING_ROUTE, formData);
       alert("Tweet posted successfully!");
-    } catch (err) {
+      console.log("Tweet response:", response.data);
+
+      setContent("");
+      setImages([]);
+      setAiResponses(null);
+      setTweetContent(undefined);
+    } catch (err: any) {
       console.error("Tweet post error:", err);
-      alert("Failed to post tweet.");
+      const errorMessage = err.response?.data?.message || "Failed to post tweet.";
+      alert(errorMessage);
     }
     setPosting(false);
   };
+
   return (
     <div className="p-4 max-w-2xl mx-auto space-y-6">
       <Card>
