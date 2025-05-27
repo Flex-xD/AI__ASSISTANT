@@ -38,6 +38,7 @@ const PostWithAIResponses: React.FC = () => {
       setTweetContent(response.data.data.twitter);
     } catch (err) {
       console.error("AI generation error:", err);
+      console.log({err});
       alert("Failed to generate AI responses.");
     }
     setLoading(false);
