@@ -22,8 +22,10 @@
   },
   "dependencies": {
     "@types/body-parser": "^1.19.5",
+    "@types/snoowrap": "^1.19.0",
     "axios": "^1.9.0",
     "body-parser": "^2.2.0",
+    "cloudinary": "^2.6.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
@@ -36,6 +38,7 @@
     "mongoose": "^8.13.2",
     "multer": "^2.0.0",
     "openai": "^4.96.2",
+    "snoowrap": "^1.23.0",
     "twitter-api-v2": "^1.23.0",
     "zod": "^3.24.3"
   }

@@ -1,3 +1,4 @@
+import type { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 
 export const apiResponse = <T>(
@@ -21,7 +22,6 @@ export class ApiError extends Error {
     }
 }
 
-import type { Request, Response } from "express";
 
 export const asyncHandler = (fn: (req: Request, res: Response) => Promise<void>) => {
     return (req: Request, res: Response) => {

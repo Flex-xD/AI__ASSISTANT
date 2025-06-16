@@ -46,7 +46,7 @@ When given a prompt, respond with engaging and platform-optimized versions for:
 Respond in the following JSON structure:
 {
     "twitter": "<best short-form tweet-like content>",
-    "reddit": "<thoughtful reddit post-style content>",
+    "reddit": "<thoughtful reddit post-style content> with title and content inside reddit response",
     "discord": "<friendly discord-style message>"
 }
 
